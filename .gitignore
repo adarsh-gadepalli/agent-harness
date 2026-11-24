@@ -13,6 +13,7 @@ dist/
 
 # Harness runtime output
 transcripts/
+reports/
 *.jsonl
 
 # OS / editor
