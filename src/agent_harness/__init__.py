@@ -1,7 +1,6 @@
-import ollama
+from agent_harness.loop import MODEL, run_turn
 
-MODEL = "qwen2.5:7b"
-SYSTEM_PROMPT = "You are a helpful assistant."
+SYSTEM_PROMPT = "You are a helpful assistant. Use tools when they help answer the question."
 
 
 def main() -> None:
@@ -25,22 +24,7 @@ def main() -> None:
             continue
 
         messages.append({"role": "user", "content": user_input})
-
-        stream = ollama.chat(
-            model=MODEL,
-            messages=messages,
-            stream=True,
-            options={"num_ctx": 8192},
-        )
-
-        reply = ""
         try:
-            for chunk in stream:
-                piece = chunk.message.content
-                print(piece, end="", flush=True)
-                reply += piece
+            run_turn(messages)
         except KeyboardInterrupt:
             print("\n[interrupted]")
-        print()
-
-        messages.append({"role": "assistant", "content": reply})
