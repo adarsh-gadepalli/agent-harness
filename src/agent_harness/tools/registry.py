@@ -44,7 +44,11 @@ TOOLS: dict[str, Tool] = {}
 def tool(risk: str = "read"):
     """Decorator that registers a function as a tool the model can call."""
     def decorator(fn: Callable) -> Callable:
-        TOOLS[fn.__name__] = Tool(fn, risk)
+        # if tool is already registered, raise an error
+        name = fn.__name__
+        if name in TOOLS:
+            raise ValueError(f"Tool already registered: {name}")
+        TOOLS[name] = Tool(fn, risk)
         return fn
     return decorator
 
@@ -56,8 +60,12 @@ def schemas() -> list[dict]:
 
 def execute(name: str, arguments: dict) -> str:
     """Run a tool call. Never raises: failures come back as 'Error: ...' strings for the model."""
+
+    # invalid tool
     if name not in TOOLS:
         return f"Error: {name} is not a valid tool. Available tools: {', '.join(TOOLS)}"
+
+    # execute the tool
     try:
         return str(TOOLS[name].fn(**arguments))
     except TypeError as e:

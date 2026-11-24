@@ -237,8 +237,8 @@ Each milestone ends with something runnable.
 
 - [x] **1. Setup.** Ollama installed, model pulled, project scaffolded with `uv`.
 - [x] **2. Plain chat loop.** `messages` list, streaming responses, `/reset` and `/exit`.
-- [ ] **3. Tool calling.** `@tool` registry, schema generation, the agent loop, error-as-result handling, `max_steps`. Test with a trivial `get_time` tool.
-- [ ] **4. Web tools.** `web_search` and `fetch_page` with text extraction and pagination; source registry with `[n]` IDs.
+- [x] **3. Tool calling.** `@tool` registry, schema generation, the agent loop, error-as-result handling, `max_steps`. Test with a trivial `get_time` tool.
+- [x] **4. Web tools.** `web_search` and `fetch_page` with text extraction and pagination; source registry with `[n]` IDs.
 - [ ] **5. Permissions and safety.** Risk levels, policy rules, interactive approval, network guardrails, untrusted-content delimiters.
 - [ ] **6. Context management.** Token budgeting, pinned research state, truncation, sliding window, compaction.
 - [ ] **7. Research workflow.** Notes scratchpad, `write_report` with citation validation, research system prompt.
