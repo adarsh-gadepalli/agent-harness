@@ -24,18 +24,24 @@ def web_search(query: str, max_results: int = 5) -> str:
     """Search the web. Returns numbered results with title, URL, and a short snippet.
     Each result starts with a source id like [3]. Use fetch_page on a result's URL to read the full page."""
     global _last_search_at
+
+
+    # search delay to prevent rate limiting
     wait = SEARCH_DELAY_SECONDS - (time.monotonic() - _last_search_at)
     if wait > 0:
         time.sleep(wait)
     _last_search_at = time.monotonic()
 
+    # search the web for the query
     results = DDGS().text(query, max_results=max_results)
     if not results:
         return "No results."
 
+    # format the results into a string
     lines = []
     for r in results:
         source_id = SOURCES.add(r["href"], r.get("title", ""))
+        # print(f"[{source_id}] {r.get('title', '')}\n    {r['href']}\n    {r.get('body', '')}")
         lines.append(f"[{source_id}] {r.get('title', '')}\n    {r['href']}\n    {r.get('body', '')}")
     return "\n".join(lines)
 
@@ -44,6 +50,12 @@ def web_search(query: str, max_results: int = 5) -> str:
 def fetch_page(url: str, page: int = 1) -> str:
     """Read the main text of a web page. Long pages are split into pages of ~1500 tokens;
     the header says 'page X of N'. Call again with page=2, 3, ... to keep reading."""
+
+    # check if the url is a valid url
+    if not url.startswith("http"):
+        return f"Error: {url} is not a valid URL."
+
+    # check if page is cached, if not fetch it
     if url not in _page_cache:
         response = httpx.get(
             url,
@@ -51,15 +63,20 @@ def fetch_page(url: str, page: int = 1) -> str:
             follow_redirects=True,
             headers={"User-Agent": USER_AGENT},
         )
+        
         response.raise_for_status()
         text = trafilatura.extract(response.text)
         if not text:
             return f"Error: no readable text found at {url} (it may need JavaScript or a login). Try another source."
+        
+        # cache PAGE_CHARS of text for each page
         _page_cache[url] = [text[i : i + PAGE_CHARS] for i in range(0, len(text), PAGE_CHARS)]
 
+    # get the page from the cache
     pages = _page_cache[url]
     if not 1 <= page <= len(pages):
-        return f"Error: page {page} is out of range; this document has {len(pages)} page(s)."
+        return f"Error: page {page} is out of range; this document has {len(pages)} pages."
 
+    # add the url to the sources and return the page
     source_id = SOURCES.add(url)
     return f"[{source_id}] {url} (page {page} of {len(pages)})\n\n{pages[page - 1]}"
